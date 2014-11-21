@@ -9,7 +9,7 @@ See URL `http://flowtype.org/'."
 	  ":"
 	  line
 	  ":"
-	  (minimal-match (one-or-more (not (any ":"))))
+	  (minimal-match (one-or-more not-newline))
 	  ": "
 	  (message (minimal-match (and (one-or-more anything) "\n")))
 	  line-end))
