@@ -5,7 +5,6 @@
  * @author		Nick Benik, Griffin Weber MD PhD
  * @version 	1.3
  *
- * @flow
  * ----------------------------------------------------------------------------------------
  * updated 9-15-08: RC4 launch [Nick Benik] 
  * excerpted 2014-11-21 for use in PortQuery plug-in [Dan Connolly]
