@@ -3,7 +3,7 @@
   "A JavaScript syntax and style checker using Flow.
 
 See URL `http://flowtype.org/'."
-  :command ("flow" source-original)
+  :command ("flow" "check" "--lib" "lib" source-original)
   :error-patterns
   ((error line-start
 	  (file-name)
