@@ -1,6 +1,8 @@
 {
     files: [
-	'pqctrl.js'],
+	'doQueryLoad.js',
+	'pqctrl.js'
+    ],
     css: ['style.css'],
     config: {
 	short_name: 'PortQuery',

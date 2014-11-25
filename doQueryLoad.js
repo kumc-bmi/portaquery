@@ -77,7 +77,7 @@
 						i2b2.CRC.ctrlr.QT._redrawAllPanels();
 						
 						// extract the data for each panel
-						var po: any = {};
+						var po = {};
 						po.panel_num = i2b2.h.getXNodeVal(qp[i1],'panel_number');
 						var t = i2b2.h.getXNodeVal(qp[i1],'invert');
 						po.exclude = (t=="1");
@@ -125,7 +125,7 @@
 							
 							// Determine what item this is
 							if (ckey.startsWith("query_master_id")) {
-								var o: any = new Object;
+								var o = new Object;
 								o.name =i2b2.h.getXNodeVal(pi[i2],'item_name');
 								o.id = ckey.substring(16);
 								o.result_instance_id = o.PRS_id ;
@@ -133,7 +133,7 @@
 								var sdxDataNode = i2b2.sdx.Master.EncapsulateData('QM',o);
 								po.items.push(sdxDataNode);								
 							} else 	if (ckey.startsWith("masterid")) {
-								var o: any = new Object;
+								var o = new Object;
 								o.name =i2b2.h.getXNodeVal(pi[i2],'item_name');
 								o.id = ckey;
 								o.result_instance_id = o.PRS_id ;
@@ -141,7 +141,7 @@
 								var sdxDataNode = i2b2.sdx.Master.EncapsulateData('QM',o);
 								po.items.push(sdxDataNode);								
 							} else if (ckey.startsWith("patient_set_coll_id")) {
-								var o: any = new Object;
+								var o = new Object;
 								o.titleCRC =i2b2.h.getXNodeVal(pi[i2],'item_name');
 								o.PRS_id = ckey.substring(20);
 								o.result_instance_id = o.PRS_id ;
@@ -149,7 +149,7 @@
 								var sdxDataNode = i2b2.sdx.Master.EncapsulateData('PRS',o);
 								po.items.push(sdxDataNode);		
 							} else if (ckey.startsWith("patient_set_enc_id")) {
-								var o: any = new Object;
+								var o = new Object;
 								o.titleCRC =i2b2.h.getXNodeVal(pi[i2],'item_name');
 								o.PRS_id = ckey.substring(19);
 								o.result_instance_id = o.PRS_id ;
@@ -168,7 +168,7 @@
 								
 								// WE MUST QUERY THE ONT CELL TO BE ABLE TO DISPLAY THE TREE STRUCTURE CORRECTLY
 	
-									var o: any = new Object;
+									var o = new Object;
 									o.level = i2b2.h.getXNodeVal(pi[i2],'hlevel');
 									o.name = i2b2.h.getXNodeVal(pi[i2],'item_name');
 									o.key = i2b2.h.getXNodeVal(pi[i2],'item_key');
@@ -371,4 +371,4 @@
 				i2b2.CRC.ctrlr.QT._redrawAllPanels();
 		};
 
-})(window);
+}(window));
