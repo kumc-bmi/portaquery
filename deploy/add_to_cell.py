@@ -85,7 +85,7 @@ if __name__ == '__main__':
 
         def open_config():
             path = argv[1]
-            return openf(path, 'rwb')
+            return openf(path, 'r+b')
 
         main(open_config)
 
