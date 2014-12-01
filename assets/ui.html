@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head><title>PortQuery plugin</title>
 <meta name="charset" content="utf-8" />
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
@@ -11,24 +12,52 @@
 
   <div class="pq-plugin-MainContent">
 
-    <p>Copy a query from the debug window and paste below:</p>
+    <ol class="directions">
+
+      <li>In the other i2b2:
+        <ol>
+          <li>Run a query.
+            <ul>
+
+              <li>
+                Make sure debug mode is on: look for the <strong>Show
+                  XML Message Stack</strong> button: <img src=
+                  "https://nightheron.kumc.edu/i2b2/webclient/assets/images/msg_stack.gif"
+                  alt="<>" />, especially in the top right Query Tool
+                  section.
+              </li>
+            </ul>
+          </li>
+
+          <li>Open the <strong>XML Message Stack</strong> and find
+            the <tt>runQueryInstance_fromQueryDefinition</tt> message for
+            your query (recent messages are at the bottom of the list)</li>
+
+          <li>Copy the <tt>query_definition</tt> element, including
+          its tags.</li>
+
+        </ol>
+      </li>
+      <li>Then, in this i2b2,
+        <ol>
+          <li>Paste below.</li>
+          <li>Hit <strong>Load Query</strong> below.</li>
+          <li>Select the <strong>Find Patients</strong> tab to see
+          your query.</li>
+        </ol>
+      </li>
+    </ol>
+
     <div>
-      <textarea id="pq-query-text">
+      <textarea id="pq-query-text"
+                cols="120" rows="30">
       </textarea>
     </div>
     <div>
-      <button type="button" id="pq-doit">Go</button>
+      <button type="button" id="pq-doit">Load Query</button>
     </div>
   </div>
-
-  <hr />
-  <div><h3>Acknowledgements</h3>
-    <p><em>TODO</em></p>
-    <ul>
-     <li>...</li>
-    </ul>
-    </div>
-  </div>
+</div>
 
 </body>
 </html>
