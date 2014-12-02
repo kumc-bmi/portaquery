@@ -20,7 +20,7 @@ r'''Add plugin to i2b2 cell config
 ... // ========...
 ... """
 
->>> pq = cell_config()
+>>> pq = cell_config('PortQuery')
 >>> result = edit(txt.split('\n'), pq)
 >>> result.index('PortQuery'), result.index('tempCellsList')
 (187, 101)
@@ -36,11 +36,13 @@ ValueError
 import json
 
 
-def main(open_config):
+def main(argv, open_config):
+    [code_dir, _config] = argv[1:3]
+
     with open_config() as config:
         lines = config.readlines()
         try:
-            result = edit(lines, cell_config())
+            result = edit(lines, cell_config(code=code_dir))
         except ValueError:  # already there
             pass
         else:
@@ -48,7 +50,7 @@ def main(open_config):
             config.write(result)
 
 
-def cell_config(code='PortQuery',
+def cell_config(code,
                 subdir='HERON'):
     return {
         'code': code,
@@ -84,9 +86,9 @@ if __name__ == '__main__':
         from __builtin__ import open as openf
 
         def open_config():
-            path = argv[1]
+            _plugin, path = argv[1:3]
             return openf(path, 'r+b')
 
-        main(open_config)
+        main(argv, open_config)
 
     _trusted_main()
