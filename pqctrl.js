@@ -23,7 +23,12 @@
 
     function mkPortQuery(queryTextArea, doitButton, doQuery) {
         function onClick(elt, doit) {
-            elt.addEventListener("click", doit);
+            if(elt.addEventListener){
+                 elt.addEventListener("click", doit);
+             }
+            else if(elt.attachEvent) {
+                elt.attachEvent("onclick", doit);
+            }
         }
 
         onClick(doitButton, function() {
