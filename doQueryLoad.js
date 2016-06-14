@@ -445,6 +445,53 @@
 					dObj.panels = dObj.panels.compact();
 					i2b2.CRC.model.queryCurrent.panels[j] = dObj.panels;
 				
-		};
-
+				}
+				// populate the panels yuiTrees
+				try {
+					var qpc = i2b2.CRC.ctrlr.QT.panelControllers[0];
+					var dm = i2b2.CRC.model.queryCurrent;
+					for (var k=0; k<dm.panels.length; k++) {
+					for (var pi=0; pi<dm.panels[k].length; pi++) {
+						// create a treeview root node and connect it to the treeview controller
+						dm.panels[k][pi].tvRootNode = new YAHOO.widget.RootNode(qpc.yuiTree);
+						qpc.yuiTree.root = dm.panels[k][pi].tvRootNode;
+						dm.panels[k][pi].tvRootNode.tree = qpc.yuiTree;
+						qpc.yuiTree.setDynamicLoad(i2b2.CRC.ctrlr.QT._loadTreeDataForNode,1);						
+						// load the treeview with the data
+						var tvRoot = qpc.yuiTree.getRoot();
+						for (var pii=0; pii<dm.panels[k][pi].items.length; pii++) {
+							var withRenderData = qpc._addConceptVisuals(dm.panels[k][pi].items[pii], tvRoot, false);
+							if (dm.panels[k][pi].items[pii].ModValues)
+							{
+								withRenderData.ModValues = 	dm.panels[k][pi].items[pii].ModValues;
+							}
+							if (dm.panels[k][pi].items[pii].LabValues)
+							{
+								withRenderData.LabValues = 	dm.panels[k][pi].items[pii].LabValues;
+							}
+							if (dm.panels[k][pi].items[pii].dateFrom)
+							{
+								withRenderData.dateFrom = 	dm.panels[k][pi].items[pii].dateFrom;
+							}
+							if (dm.panels[k][pi].items[pii].dateTo)
+							{
+								withRenderData.dateTo = 	dm.panels[k][pi].items[pii].dateTo;
+							}
+							dm.panels[k][pi].items[pii] = withRenderData;
+						}
+					}
+					}
+				} catch (e) {}
+				// redraw the Query Tool GUI
+				i2b2.CRC.ctrlr.QT._redrawPanelCount();
+				i2b2.CRC.ctrlr.QT.doScrollFirst();
+				// hide the loading mask
+				i2b2.h.LoadingMask.hide();
+				}
+				i2b2.CRC.ctrlr.QT.temporalGroup = 0;
+				i2b2.CRC.ctrlr.QT._redrawAllPanels();
+				i2b2.CRC.view.QT.ResizeHeight();
+									//Load the query status
+				i2b2.CRC.ctrlr.QT.laodQueryStatus(qm_id, dObj.name);
+		}
 }(window));
