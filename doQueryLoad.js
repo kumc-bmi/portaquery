@@ -30,8 +30,21 @@
 				i2b2.CRC.ctrlr.QT.doQueryClear();
 				var dObj = {};
 				dObj.name = i2b2.h.getXNodeVal(results.refXML,'name');
-					$('queryName').innerHTML = dObj.name;
-				dObj.timing = i2b2.h.getXNodeVal(qd[0],'query_timing');
+				this.doSetQueryName(dObj.name); // BUG FIX - WEBCLIENT-102
+				dObj.timing = i2b2.h.XPath(qd[0],'descendant-or-self::query_timing/text()');
+				dObj.timing = dObj.timing[0].nodeValue;
+				if($("crcQueryToolBox.bodyBox")){
+					var userId = i2b2.h.getXNodeVal(results.refXML,'user_id');
+					var existingUserIdElemList = $$("#userIdElem");
+					if(existingUserIdElemList)
+					{
+						existingUserIdElemList.each(function(existingUserIdElem){
+							existingUserIdElem.remove();
+						});
+					}
+					$("crcQueryToolBox.bodyBox").insert(new Element('input',{'type':'hidden','id':'userIdElem','value':userId}));
+				}
+
 				//i2b2.CRC.view.QT.queryTimingButtonset("label", dObj.timing);
 				i2b2.CRC.view.QT.setQueryTiming(dObj.timing);
 				dObj.specificity = i2b2.h.getXNodeVal(qd[0],'specificity_scale');
@@ -39,26 +52,47 @@
 	
 				var sqc = i2b2.h.XPath(qd[0], 'subquery_constraint');
 			
+				 for (var j=3; j < qd.length; j++)
+					i2b2.CRC.view.QT.addNewTemporalGroup();
+
+				 for (var j=1; j < sqc.length; j++)
+					i2b2.CRC.ctrlr.QT.doAddTemporal();
+
 				for (var j=0; j <sqc.length; j++) {
 
 					i2b2.CRC.view.QT.setQueryTiming("TEMPORAL");
 					//i2b2.CRC.view.QT.setQueryTiming("BUILDER");
 				
-					 $('instancevent1['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'first_query/query_id');
+					// $('instancevent1['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'first_query/query_id');
 					 $('preloc1['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'first_query/join_column');
 					 $('instanceopf1['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'first_query/aggregate_operator');
-					$('postloc['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'operator');
-					$('instancevent2['+j + ']').value =i2b2.h.getXNodeVal(sqc[j],'second_query/query_id');
+					 var operator = i2b2.h.XPath(sqc[j],'descendant-or-self::operator/text()');
+					 $('postloc['+j + ']').value = operator[0].nodeValue;
+
+					//$('postloc['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'operator');
+//					$('instancevent2['+j + ']').value =i2b2.h.getXNodeVal(sqc[j],'second_query/query_id');
 					$('preloc2['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'second_query/join_column');
 					$('instanceopf2['+j + ']').value = i2b2.h.getXNodeVal(sqc[j],'second_query/aggregate_operator');
 
+					var event1 = i2b2.h.XPath(sqc[j],'descendant-or-self::first_query/query_id/text()');
+					var evalue =  event1[0].nodeValue;
+					evalue = evalue.replace("Event ", "");
+					evalue = evalue - 1;
+					 $('instancevent1['+j + ']').selectedIndex  = evalue;
 
+					var event2 = i2b2.h.XPath(sqc[j],'descendant-or-self::second_query/query_id/text()');
+					var evalue =  event2[0].nodeValue;
+					evalue = evalue.replace("Event ", "");
+					evalue = evalue - 1;
+					 $('instancevent2['+j + ']').selectedIndex  = evalue;
+					
 					var span = i2b2.h.XPath(sqc[j], 'span');
 
 					for (var k=0; k < span.length; k++) {
-						$('byspan' + k + '[' +j + ']').value = i2b2.h.getXNodeVal(span[k],'operator');
-						$('bytimevalue' + k + '[' +j + ']').value = i2b2.h.getXNodeVal(span[k],'span_value');
-						$('bytimeunit' + k + '[' +j + ']').value = i2b2.h.getXNodeVal(span[k],'units');
+						$('byspan' + (k + 1) + '[' +j + ']').value = i2b2.h.getXNodeVal(span[k],'operator');
+						$('bytimevalue' + (k + 1) + '[' +j + ']').value = i2b2.h.getXNodeVal(span[k],'span_value');
+						$('bytimeunit' + (k + 1) + '[' +j + ']').value = i2b2.h.getXNodeVal(span[k],'units');
+						$('bytime' + (k + 1) + '[' +j + ']').checked  = true;
 					}
 				}
 				
@@ -72,10 +106,15 @@
 					
 					var total_panels = qp.length;
 					for (var i1=0; i1<total_panels; i1++) {
+						var allDateFromsAreSame = true;
+						var allDateTosAreSame = true;
+						var allDateFroms = {};
+						var allDateTos = {};
 						i2b2.CRC.ctrlr.QT.temporalGroup = j;
 						i2b2.CRC.ctrlr.QT._redrawAllPanels();
 						
 						// extract the data for each panel
+						
 						var po = {};
 						po.panel_num = i2b2.h.getXNodeVal(qp[i1],'panel_number');
 						var t = i2b2.h.getXNodeVal(qp[i1],'invert');
@@ -86,7 +125,7 @@
 						po.timing = i2b2.h.getXNodeVal(qp[i1],'panel_timing') || 'ANY';			
 						i2b2.CRC.view.QT.setPanelTiming(po.panel_num, po.timing);
 						var t = i2b2.h.getXNodeVal(qp[i1],'total_item_occurrences');
-						po.occurs = (t|0)-1;
+						po.occurs = (1*t)-1;
 						var t = i2b2.h.getXNodeVal(qp[i1],'panel_accuracy_scale');
 						po.relevance = t;					
 						var t = i2b2.h.getXNodeVal(qp[i1],'panel_date_from');
@@ -116,7 +155,52 @@
 						}
 						po.items = [];
 						var pi = i2b2.h.XPath(qp[i1], 'descendant::item[item_key]');
-						for (var i2=0; i2<pi.length; i2++) {
+						for (i2=0; i2<pi.length; i2++) {
+							var itm = {};
+							// BUG FIX: WEBCLIENT-136
+							if(po.dateFrom == false){
+								var t = i2b2.h.getXNodeVal(pi[i2],'constrain_by_date/date_from');
+								if (t) {
+									itm.dateFrom = {};
+									itm.dateFrom.Year = t.substring(0,4); //t[0];
+									itm.dateFrom.Month = t.substring(5,7); //t[1];
+									itm.dateFrom.Day = t.substring(8,10); //t[2];
+								}
+							} else { // WEBCLIENT-162: Backwards compatible <panel_date_from> support
+								itm.dateFrom = po.dateFrom;
+							}
+							if(po.dateTo == false){
+								var t = i2b2.h.getXNodeVal(pi[i2],'constrain_by_date/date_to');
+								if (t) {
+									itm.dateTo = {};
+									itm.dateTo.Year =  t.substring(0,4); //t[0];
+									itm.dateTo.Month =  t.substring(5,7); // t[1];
+									itm.dateTo.Day = t.substring(8,10);// t[2];
+								}
+							} else { // WEBCLIENT-162: Backwards compatible <panel_date_to> support
+								itm.dateTo = po.dateTo;
+							}
+							if ((pi.length == 1) && (i2 == 0)){
+								if(typeof i2b2.h.getXNodeVal(pi[i2],'constrain_by_date/date_from' === "undefined"))
+									allDateFromsAreSame = false;
+								if(typeof i2b2.h.getXNodeVal(pi[i2],'constrain_by_date/date_to' === "undefined"))
+									allDateTosAreSame = false;
+							}
+							// Set panel date by looking at item dates
+							if ((pi.length > 1) && (i2 < pi.length - 1) && allDateFromsAreSame && allDateTosAreSame){
+								if(i2b2.h.getXNodeVal(pi[i2],'constrain_by_date/date_from') != i2b2.h.getXNodeVal(pi[i2 + 1],'constrain_by_date/date_from')){
+									allDateFromsAreSame = false;
+								} else {
+									allDateFroms = itm.dateFrom;
+								}
+								if(i2b2.h.getXNodeVal(pi[i2],'constrain_by_date/date_to') != i2b2.h.getXNodeVal(pi[i2 + 1],'constrain_by_date/date_to')){
+									allDateTosAreSame = false;
+								} else {
+									allDateTos = itm.dateTo;
+								}
+							}
+							
+								
 							var item = {};
 							// get the item's details from the ONT Cell
 							var ckey = i2b2.h.getXNodeVal(pi[i2],'item_key');
@@ -167,13 +251,23 @@
 								
 								// WE MUST QUERY THE ONT CELL TO BE ABLE TO DISPLAY THE TREE STRUCTURE CORRECTLY
 	
-									var o = new Object;
-									o.level = i2b2.h.getXNodeVal(pi[i2],'hlevel');
-									o.name = i2b2.h.getXNodeVal(pi[i2],'item_name');
-									o.key = i2b2.h.getXNodeVal(pi[i2],'item_key');
-									o.synonym_cd = i2b2.h.getXNodeVal(pi[i2],'item_is_synonym');
-									o.tooltip = i2b2.h.getXNodeVal(pi[i2],'tooltip');
-									o.hasChildren = i2b2.h.getXNodeVal(pi[i2],'item_icon');
+                                    var o = new Object;
+                                    o.level = i2b2.h.getXNodeVal(pi[i2],'hlevel');
+                                    o.name = i2b2.h.getXNodeVal(pi[i2],'item_name');
+                                    o.tooltip = i2b2.h.getXNodeVal(pi[i2],'tooltip');
+
+                                     // nw096 - If string starts with path \\, lookup path in Ontology cell
+                                    if(o.name.slice(0, 2) == '\\\\'){
+                                     var results = i2b2.ONT.ajax.GetTermInfo("ONT", {ont_max_records:'max="1"', ont_synonym_records:'false', ont_hidden_records: 'false', concept_key_value: o.name}).parse();
+                                       if(results.model.length > 0){
+                                           o.name = results.model[0].origData.name;
+                                           o.tooltip = results.model[0].origData.tooltip;
+                                        }
+                                     }
+
+                                     o.key = i2b2.h.getXNodeVal(pi[i2],'item_key');
+                                     o.synonym_cd = i2b2.h.getXNodeVal(pi[i2],'item_is_synonym');
+                                      o.hasChildren = i2b2.h.getXNodeVal(pi[i2],'item_icon');									
 									
 									//o.xmlOrig = c;
 									
@@ -198,6 +292,8 @@
 												} else {
 													o.LabValues.Value = t;
 												}
+												o.LabValues.UnitsCtrl = i2b2.h.getXNodeVal(lvd,"value_unit_of_measure");										
+
 												break;
 											case "STRING":
 												o.LabValues.MatchBy = "VALUE";
@@ -235,7 +331,14 @@
 									var sdxDataNode = i2b2.sdx.Master.EncapsulateData('CONCPT',o);
 									if (o.LabValues) {
 										// We do want 2 copies of the Lab Values: one is original from server while the other one is for user manipulation
-										sdxDataNode.LabValues = o.LabValues;
+										sdxDataNode.LabValues = o.LabValues;	
+									}
+									if (itm.dateFrom) {
+										sdxDataNode.dateFrom = itm.dateFrom;
+									}
+									
+									if (itm.dateTo) {
+										sdxDataNode.dateTo = itm.dateTo;
 									}
 											//o.xmlOrig = c;
 											if (i2b2.h.XPath(pi[i2], 'descendant::constrain_by_modifier').length > 0) {
@@ -262,7 +365,7 @@
 												var t = i2b2.h.getXNodeVal(lvd,"value_constraint");
 												o.ModValues = {};
 												o.ModValues.NumericOp = i2b2.h.getXNodeVal(lvd,"value_operator");
-												o.ModValues.GeneralValueType = i2b2.h.getXNodeVal(lvd,"value_type");								
+												o.ModValues.GeneralValueType = i2b2.h.getXNodeVal(lvd,"value_type");	
 												switch(o.ModValues.GeneralValueType) {
 													case "NUMBER":
 														o.ModValues.MatchBy = "VALUE";
@@ -274,6 +377,7 @@
 														} else {
 															o.ModValues.Value = t;
 														}
+														o.ModValues.UnitsCtrl = i2b2.h.getXNodeVal(lvd,"value_unit_of_measure");	
 														break;
 													case "STRING":
 														o.ModValues.MatchBy = "VALUE";
@@ -311,6 +415,7 @@
 											if (o.ModValues) {
 												// We do want 2 copies of the Lab Values: one is original from server while the other one is for user manipulation
 												sdxDataNode.ModValues = o.ModValues;
+
 											}
 										//}
 												
@@ -324,50 +429,22 @@
 								
 							}
 						}
+						
+						if(allDateFromsAreSame && allDateTosAreSame){
+							if(typeof allDateTos !== "undefined"){
+								po.dateTo = allDateTos;
+							}
+							if(typeof allDateFroms !== "undefined"){
+								po.dateFrom = allDateFroms;
+							}
+						}
+						
 						dObj.panels[po.panel_num] = po;
 					}
 					// reindex the panels index (panel [1,3,5] should be [0,1,2])
 					dObj.panels = dObj.panels.compact();
 					i2b2.CRC.model.queryCurrent.panels[j] = dObj.panels;
 				
-				}
-				// populate the panels yuiTrees
-				try {
-					var qpc = i2b2.CRC.ctrlr.QT.panelControllers[0];
-					var dm = i2b2.CRC.model.queryCurrent;
-					for (var k=0; k<dm.panels.length; k++) {
-					for (var pi=0; pi<dm.panels[k].length; pi++) {
-						// create a treeview root node and connect it to the treeview controller
-						dm.panels[k][pi].tvRootNode = new YAHOO.widget.RootNode(qpc.yuiTree);
-						qpc.yuiTree.root = dm.panels[k][pi].tvRootNode;
-						dm.panels[k][pi].tvRootNode.tree = qpc.yuiTree;
-						qpc.yuiTree.setDynamicLoad(i2b2.CRC.ctrlr.QT._loadTreeDataForNode,1);						
-						// load the treeview with the data
-						var tvRoot = qpc.yuiTree.getRoot();
-						for (var pii=0; pii<dm.panels[k][pi].items.length; pii++) {
-							var withRenderData = qpc._addConceptVisuals(dm.panels[k][pi].items[pii], tvRoot, false);
-							if (dm.panels[k][pi].items[pii].ModValues)
-							{
-								withRenderData.ModValues = 	dm.panels[k][pi].items[pii].ModValues;
-							}
-							if (dm.panels[k][pi].items[pii].LabValues)
-							{
-								withRenderData.LabValues = 	dm.panels[k][pi].items[pii].LabValues;
-							}
-							
-							dm.panels[k][pi].items[pii] = withRenderData;
-						}
-					}
-					}
-				} catch (e) {}
-				// redraw the Query Tool GUI
-				i2b2.CRC.ctrlr.QT._redrawPanelCount();
-				i2b2.CRC.ctrlr.QT.doScrollFirst();
-				// hide the loading mask
-				i2b2.h.LoadingMask.hide();
-				}
-				i2b2.CRC.ctrlr.QT.temporalGroup = 0;
-				i2b2.CRC.ctrlr.QT._redrawAllPanels();
 		};
 
 }(window));
