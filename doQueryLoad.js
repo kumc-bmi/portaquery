@@ -491,7 +491,5 @@
 				i2b2.CRC.ctrlr.QT.temporalGroup = 0;
 				i2b2.CRC.ctrlr.QT._redrawAllPanels();
 				i2b2.CRC.view.QT.ResizeHeight();
-									//Load the query status
-				i2b2.CRC.ctrlr.QT.laodQueryStatus(qm_id, dObj.name);
 		}
 }(window));
