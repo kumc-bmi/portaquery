@@ -1,0 +1,35 @@
+# Usage:
+#   ansible-playbook --ask-become-pass -i <i2b2_host>, playbook.yml
+
+
+---
+- hosts: all
+  become: yes
+  vars:
+    htdocs: "/var/www/html"
+    webclient: "{{ htdocs }}/i2b2/webclient"
+    plugins: "{{ webclient }}/js-i2b2/cells/plugins"
+    archive: "PortQuery.zip"
+  tasks:
+# ISSUE: ideally we'd tweak the permissions only if we needed to...
+#    - name: "Check plugin dir readability"
+#      command: "find {{ plugins }} -type f -perm o=r"
+#      register: plugin_status
+    - name: "Create PortQuery directory in HERON plugins"
+      file:
+        path: "{{ plugins }}/HERON/PortQuery"
+        state: "directory"
+        mode: ugo+rx
+    - name: "Unpack PortQuery files"
+      unarchive:
+        dest: "{{ plugins }}/HERON/"
+        src: "{{ archive }}"
+    - name: "Configure plugin"
+      shell: "python {{ plugins }}/HERON/PortQuery/deploy/add_to_cell.py PortQuery {{ webclient }}/js-i2b2/i2b2_loader.js"
+#      when: plugin_status|failed
+    - name: "Let devs explore web space dirs without root"
+      shell: "find {{ htdocs }}/i2b2 -type d -print0 | xargs -0 chmod o+rx"
+#      when: plugin_status|failed
+#    - name: "Let devs explore web space files without root"
+#      shell: "find {{ htdocs }}/i2b2 -type f -print0 | xargs -0 chmod o+r"
+#      when: plugin_status|failed
